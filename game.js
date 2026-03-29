@@ -35,28 +35,67 @@
   let frameCount = 0;
   let difficultyTimer = 0;
 
-  // --- Sprite Loading ---
-  const spriteFrames = [];
+  // --- Sprite Loading (white background removal) ---
+  const spriteFrames = []; // will hold processed canvases
   let spritesLoaded = 0;
   const totalSprites = 9;
+
+  function removeWhiteBackground(img) {
+    try {
+      const offCanvas = document.createElement("canvas");
+      offCanvas.width = img.width;
+      offCanvas.height = img.height;
+      const offCtx = offCanvas.getContext("2d");
+      offCtx.drawImage(img, 0, 0);
+      const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        // Treat near-white pixels as transparent
+        if (r > 230 && g > 230 && b > 230) {
+          data[i + 3] = 0;
+        }
+        // Soften light gray edges for smoother blending
+        else if (r > 200 && g > 200 && b > 200) {
+          data[i + 3] = Math.floor(255 * (1 - (r + g + b - 600) / (693 - 600)));
+        }
+      }
+      offCtx.putImageData(imageData, 0, 0);
+      return offCanvas;
+    } catch (e) {
+      // CORS/tainted canvas fallback: return original image as-is
+      return img;
+    }
+  }
 
   for (let row = 1; row <= 3; row++) {
     for (let col = 1; col <= 3; col++) {
       const img = new Image();
+      const idx = spriteFrames.length;
+      spriteFrames.push(null); // placeholder
+      // Set crossOrigin only when served via HTTP (not file://)
+      if (location.protocol !== "file:") {
+        img.crossOrigin = "anonymous";
+      }
       img.src = `runner/split_${row}_${col}.png`;
       img.onload = () => {
+        spriteFrames[idx] = removeWhiteBackground(img);
         spritesLoaded++;
       };
-      spriteFrames.push(img);
+      img.onerror = () => {
+        // If image fails to load, still count it so game doesn't hang
+        spriteFrames[idx] = img;
+        spritesLoaded++;
+      };
     }
   }
 
   // --- Player ---
   const player = {
-    x: 100,
+    x: 80,
     y: 0,
-    w: 80,
-    h: 64,
+    w: 100,
+    h: 80,
     vy: 0,
     grounded: true,
     frame: 0,
@@ -419,6 +458,9 @@
   function drawGround() {
     const nearOff = layers[2].offset;
 
+    // Black band behind the runner lane for visibility
+    drawPixelRect(0, GROUND_Y - player.h - 15, W, player.h + 20, "rgba(0,0,0,0.55)");
+
     // Main ground
     drawPixelRect(0, GROUND_Y, W, H - GROUND_Y, "#3A2A18");
 
@@ -517,18 +559,19 @@
   function drawPlayer() {
     const p = player;
     if (spritesLoaded >= totalSprites && spriteFrames[p.frame]) {
-      ctx.drawImage(spriteFrames[p.frame], p.x, p.y, p.w, p.h);
+      // Draw the processed (white-removed) sprite canvas (shifted down to align feet with ground)
+      ctx.drawImage(spriteFrames[p.frame], p.x - 10, p.y + 10, p.w + 20, p.h + 10);
     } else {
       // Fallback pixel art leopard
-      drawPixelRect(p.x + 10, p.y + 10, 50, 30, COLOR.kin);
-      drawPixelRect(p.x + 55, p.y + 5, 18, 20, COLOR.kin);
-      drawPixelRect(p.x + 68, p.y + 8, 6, 4, COLOR.sumi);
+      drawPixelRect(p.x + 10, p.y + 15, 60, 32, COLOR.kin);
+      drawPixelRect(p.x + 65, p.y + 8, 22, 24, COLOR.kin);
+      drawPixelRect(p.x + 82, p.y + 12, 6, 4, COLOR.sumi);
       // Legs
       const legOffset = Math.sin(frameCount * 0.3) * 6;
-      drawPixelRect(p.x + 15, p.y + 38, 6, 16 + legOffset, COLOR.kin);
-      drawPixelRect(p.x + 30, p.y + 38, 6, 16 - legOffset, COLOR.kin);
-      drawPixelRect(p.x + 42, p.y + 38, 6, 16 + legOffset, COLOR.kin);
-      drawPixelRect(p.x + 52, p.y + 38, 6, 16 - legOffset, COLOR.kin);
+      drawPixelRect(p.x + 18, p.y + 45, 6, 18 + legOffset, COLOR.kin);
+      drawPixelRect(p.x + 34, p.y + 45, 6, 18 - legOffset, COLOR.kin);
+      drawPixelRect(p.x + 50, p.y + 45, 6, 18 + legOffset, COLOR.kin);
+      drawPixelRect(p.x + 62, p.y + 45, 6, 18 - legOffset, COLOR.kin);
     }
 
     // Draw dust particles when running on ground
@@ -550,10 +593,10 @@
 
   function checkCollision(ob) {
     const p = player;
-    const px = p.x + 12;
-    const py = p.y + 8;
-    const pw = p.w - 24;
-    const ph = p.h - 12;
+    const px = p.x + 16;
+    const py = p.y + 12;
+    const pw = p.w - 32;
+    const ph = p.h - 18;
 
     const ox = ob.x + (ob.w - ob.hitW) / 2;
     const oy = ob.y + (ob.h - ob.hitH) / 2;
