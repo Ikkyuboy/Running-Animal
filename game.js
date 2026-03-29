@@ -95,7 +95,7 @@
     x: 80,
     y: 0,
     w: 100,
-    h: 80,
+    h: 35,
     vy: 0,
     grounded: true,
     frame: 0,
@@ -459,7 +459,7 @@
     const nearOff = layers[2].offset;
 
     // Black band behind the runner lane for visibility
-    drawPixelRect(0, GROUND_Y - player.h - 15, W, player.h + 20, "rgba(0,0,0,0.55)");
+    drawPixelRect(0, GROUND_Y - 95, W, 100, "rgba(0,0,0,0.55)");
 
     // Main ground
     drawPixelRect(0, GROUND_Y, W, H - GROUND_Y, "#3A2A18");
@@ -559,19 +559,21 @@
   function drawPlayer() {
     const p = player;
     if (spritesLoaded >= totalSprites && spriteFrames[p.frame]) {
-      // Draw the processed (white-removed) sprite canvas (shifted down to align feet with ground)
-      ctx.drawImage(spriteFrames[p.frame], p.x - 10, p.y + 10, p.w + 20, p.h + 10);
+      // Draw sprite so the feet align with the ground (sprite is taller than hitbox)
+      const spriteH = 90;
+      ctx.drawImage(spriteFrames[p.frame], p.x - 10, p.y + p.h - spriteH, p.w + 20, spriteH);
     } else {
-      // Fallback pixel art leopard
-      drawPixelRect(p.x + 10, p.y + 15, 60, 32, COLOR.kin);
-      drawPixelRect(p.x + 65, p.y + 8, 22, 24, COLOR.kin);
-      drawPixelRect(p.x + 82, p.y + 12, 6, 4, COLOR.sumi);
+      // Fallback pixel art leopard (drawn relative to feet at ground)
+      const fy = p.y + p.h; // foot line
+      drawPixelRect(p.x + 10, fy - 40, 60, 25, COLOR.kin);
+      drawPixelRect(p.x + 65, fy - 45, 22, 20, COLOR.kin);
+      drawPixelRect(p.x + 82, fy - 42, 6, 4, COLOR.sumi);
       // Legs
       const legOffset = Math.sin(frameCount * 0.3) * 6;
-      drawPixelRect(p.x + 18, p.y + 45, 6, 18 + legOffset, COLOR.kin);
-      drawPixelRect(p.x + 34, p.y + 45, 6, 18 - legOffset, COLOR.kin);
-      drawPixelRect(p.x + 50, p.y + 45, 6, 18 + legOffset, COLOR.kin);
-      drawPixelRect(p.x + 62, p.y + 45, 6, 18 - legOffset, COLOR.kin);
+      drawPixelRect(p.x + 18, fy - 16, 6, 16 + legOffset, COLOR.kin);
+      drawPixelRect(p.x + 34, fy - 16, 6, 16 - legOffset, COLOR.kin);
+      drawPixelRect(p.x + 50, fy - 16, 6, 16 + legOffset, COLOR.kin);
+      drawPixelRect(p.x + 62, fy - 16, 6, 16 - legOffset, COLOR.kin);
     }
 
     // Draw dust particles when running on ground
@@ -594,9 +596,9 @@
   function checkCollision(ob) {
     const p = player;
     const px = p.x + 16;
-    const py = p.y + 12;
+    const py = p.y;
     const pw = p.w - 32;
-    const ph = p.h - 18;
+    const ph = p.h;
 
     const ox = ob.x + (ob.w - ob.hitW) / 2;
     const oy = ob.y + (ob.h - ob.hitH) / 2;
