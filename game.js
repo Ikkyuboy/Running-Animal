@@ -41,26 +41,31 @@
   const totalSprites = 9;
 
   function removeWhiteBackground(img) {
-    const offCanvas = document.createElement("canvas");
-    offCanvas.width = img.width;
-    offCanvas.height = img.height;
-    const offCtx = offCanvas.getContext("2d");
-    offCtx.drawImage(img, 0, 0);
-    const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
-    const data = imageData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i], g = data[i + 1], b = data[i + 2];
-      // Treat near-white pixels as transparent
-      if (r > 230 && g > 230 && b > 230) {
-        data[i + 3] = 0;
+    try {
+      const offCanvas = document.createElement("canvas");
+      offCanvas.width = img.width;
+      offCanvas.height = img.height;
+      const offCtx = offCanvas.getContext("2d");
+      offCtx.drawImage(img, 0, 0);
+      const imageData = offCtx.getImageData(0, 0, offCanvas.width, offCanvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        // Treat near-white pixels as transparent
+        if (r > 230 && g > 230 && b > 230) {
+          data[i + 3] = 0;
+        }
+        // Soften light gray edges for smoother blending
+        else if (r > 200 && g > 200 && b > 200) {
+          data[i + 3] = Math.floor(255 * (1 - (r + g + b - 600) / (693 - 600)));
+        }
       }
-      // Soften light gray edges for smoother blending
-      else if (r > 200 && g > 200 && b > 200) {
-        data[i + 3] = Math.floor(255 * (1 - (r + g + b - 600) / (693 - 600)));
-      }
+      offCtx.putImageData(imageData, 0, 0);
+      return offCanvas;
+    } catch (e) {
+      // CORS/tainted canvas fallback: return original image as-is
+      return img;
     }
-    offCtx.putImageData(imageData, 0, 0);
-    return offCanvas;
   }
 
   for (let row = 1; row <= 3; row++) {
@@ -68,9 +73,18 @@
       const img = new Image();
       const idx = spriteFrames.length;
       spriteFrames.push(null); // placeholder
+      // Set crossOrigin only when served via HTTP (not file://)
+      if (location.protocol !== "file:") {
+        img.crossOrigin = "anonymous";
+      }
       img.src = `runner/split_${row}_${col}.png`;
       img.onload = () => {
         spriteFrames[idx] = removeWhiteBackground(img);
+        spritesLoaded++;
+      };
+      img.onerror = () => {
+        // If image fails to load, still count it so game doesn't hang
+        spriteFrames[idx] = img;
         spritesLoaded++;
       };
     }
