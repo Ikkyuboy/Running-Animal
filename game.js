@@ -130,11 +130,11 @@
   // Changes background based on score thresholds
   const BIOMES = [
     { name: "spring",  minScore: 0,   skyBase: ["#1A3050","#264060","#335878","#4A7898","#5B8FA8"], groundColor: "#3A2A18", groundAccent: "#4A3828", sunColor: "#CB4042", sunAlpha: 0.4 },
-    { name: "sakura",  minScore: 30,  skyBase: ["#3A2040","#5A3060","#8A5080","#C080A0","#FEDFE1"], groundColor: "#3A2828", groundAccent: "#4A3030", sunColor: "#FF8090", sunAlpha: 0.5 },
-    { name: "summer",  minScore: 80,  skyBase: ["#0A3060","#1A5080","#2A80B0","#50B0D0","#80D8F0"], groundColor: "#2A3A18", groundAccent: "#3A4A28", sunColor: "#FFD700", sunAlpha: 0.6 },
-    { name: "war",     minScore: 150, skyBase: ["#2A0A0A","#4A1818","#6A2020","#8A3030","#AA4040"], groundColor: "#2A1A1A", groundAccent: "#3A2020", sunColor: "#FF2020", sunAlpha: 0.5 },
-    { name: "snow",    minScore: 250, skyBase: ["#3A4A5A","#5A6A7A","#8A9AAA","#B0C0D0","#D0D8E0"], groundColor: "#C8C8D0", groundAccent: "#A0A0B0", sunColor: "#E0E0FF", sunAlpha: 0.3 },
-    { name: "night",   minScore: 400, skyBase: ["#050510","#0A0A20","#101035","#181850","#202068"], groundColor: "#1A1A2A", groundAccent: "#252538", sunColor: "#FFFFCC", sunAlpha: 0.8 },
+    { name: "sakura",  minScore: 100, skyBase: ["#3A2040","#5A3060","#8A5080","#C080A0","#FEDFE1"], groundColor: "#3A2828", groundAccent: "#4A3030", sunColor: "#FF8090", sunAlpha: 0.5 },
+    { name: "summer",  minScore: 200, skyBase: ["#0A3060","#1A5080","#2A80B0","#50B0D0","#80D8F0"], groundColor: "#2A3A18", groundAccent: "#3A4A28", sunColor: "#FFD700", sunAlpha: 0.6 },
+    { name: "war",     minScore: 300, skyBase: ["#2A0A0A","#4A1818","#6A2020","#8A3030","#AA4040"], groundColor: "#2A1A1A", groundAccent: "#3A2020", sunColor: "#FF2020", sunAlpha: 0.5 },
+    { name: "snow",    minScore: 400, skyBase: ["#3A4A5A","#5A6A7A","#8A9AAA","#B0C0D0","#D0D8E0"], groundColor: "#C8C8D0", groundAccent: "#A0A0B0", sunColor: "#E0E0FF", sunAlpha: 0.3 },
+    { name: "night",   minScore: 500, skyBase: ["#050510","#0A0A20","#101035","#181850","#202068"], groundColor: "#1A1A2A", groundAccent: "#252538", sunColor: "#FFFFCC", sunAlpha: 0.8 },
     { name: "golden",  minScore: 600, skyBase: ["#2A1A00","#4A3010","#6A4A20","#8A6A30","#C9A94E"], groundColor: "#3A2A10", groundAccent: "#4A3A18", sunColor: "#FFD700", sunAlpha: 0.7 },
   ];
 
@@ -271,6 +271,45 @@
     for (const [bx, by, bw, bh] of positions) {
       drawPixelRect(cx + bx * s, cy + by * s, bw * s, bh * s, blossomDark);
       drawPixelRect(cx + (bx + 1) * s, cy + (by + 1) * s, (bw - 2) * s, (bh - 2) * s, blossomColor);
+    }
+  }
+
+  // Draw pixel art pine tree (matsu)
+  function drawPine(x, baseY, scale) {
+    const s = scale || 1;
+    const cx = Math.floor(x);
+    const cy = Math.floor(baseY);
+    // Trunk
+    drawPixelRect(cx + 8 * s, cy - 50 * s, 5 * s, 50 * s, "#4A3020");
+    // Foliage layers (dark green triangles)
+    const layers = [
+      [-4, -55, 28, 10],
+      [-1, -65, 22, 12],
+      [2, -75, 16, 12],
+      [5, -82, 10, 8],
+    ];
+    for (const [lx, ly, lw, lh] of layers) {
+      drawPixelRect(cx + lx * s, cy + ly * s, lw * s, lh * s, "#1A4A1A");
+      drawPixelRect(cx + (lx + 2) * s, cy + (ly + 1) * s, (lw - 4) * s, (lh - 2) * s, "#2A5A2A");
+    }
+  }
+
+  // Draw pixel art bamboo grove
+  function drawBamboo(x, baseY, scale) {
+    const s = scale || 1;
+    const cx = Math.floor(x);
+    const cy = Math.floor(baseY);
+    for (let i = 0; i < 4; i++) {
+      const bx = cx + i * 6 * s;
+      // Stalk
+      drawPixelRect(bx, cy - 70 * s, 3 * s, 70 * s, "#4A8A3A");
+      drawPixelRect(bx + 1 * s, cy - 70 * s, 1 * s, 70 * s, "#5AAA4A");
+      // Nodes
+      drawPixelRect(bx - 1 * s, cy - 25 * s, 5 * s, 2 * s, "#3A7A2A");
+      drawPixelRect(bx - 1 * s, cy - 50 * s, 5 * s, 2 * s, "#3A7A2A");
+      // Leaves
+      drawPixelRect(bx + 3 * s, cy - 52 * s, 8 * s, 3 * s, "#5AAA4A");
+      drawPixelRect(bx - 6 * s, cy - 27 * s, 7 * s, 2 * s, "#5AAA4A");
     }
   }
 
@@ -451,25 +490,51 @@
   // Background Rendering
   // ============================================================
 
-  // Pre-computed background elements positions
-  const bgElements = {
-    mountains: [
-      { x: 0, h: 120, w: 250, color: "#2A4A2A" },
-      { x: 200, h: 160, w: 300, color: "#1E3E1E" },
-      { x: 450, h: 100, w: 200, color: "#2A4A2A" },
-      { x: 600, h: 140, w: 280, color: "#1E3E1E" },
-      { x: 800, h: 110, w: 220, color: "#2A4A2A" },
-    ],
-    castles: [{ x: 350, scale: 0.7 }, { x: 850, scale: 0.5 }],
-    toriis: [{ x: 150, scale: 0.6 }, { x: 650, scale: 0.5 }],
-    trees: [
-      { x: 50, scale: 0.6 },
-      { x: 250, scale: 0.8 },
-      { x: 500, scale: 0.5 },
-      { x: 720, scale: 0.7 },
-      { x: 900, scale: 0.6 },
-    ],
-  };
+  // --- Dynamic scrolling background objects ---
+  // Objects spawn from the right and scroll left at their layer speed
+  let bgObjectsFar = [];   // mountains (far layer)
+  let bgObjectsMid = [];   // castles, toriis, trees (mid layer)
+  let bgSpawnTimerFar = 0;
+  let bgSpawnTimerMid = 0;
+
+  const BG_TYPES_FAR = ["mountain"];
+  const BG_TYPES_MID = ["castle", "torii", "sakuraTree", "pine", "bamboo"];
+
+  function spawnBgFar() {
+    const h = 80 + Math.random() * 120;
+    const w = 180 + Math.random() * 180;
+    bgObjectsFar.push({ type: "mountain", x: W + 50, h, w, color: Math.random() > 0.5 ? "#2A4A2A" : "#1E3E1E" });
+  }
+
+  function spawnBgMid() {
+    const types = BG_TYPES_MID;
+    const type = types[Math.floor(Math.random() * types.length)];
+    const scale = 0.4 + Math.random() * 0.5;
+    bgObjectsMid.push({ type, x: W + 80, scale });
+  }
+
+  // Initialize with some objects already on screen
+  function initBgObjects() {
+    bgObjectsFar = [];
+    bgObjectsMid = [];
+    for (let i = 0; i < 4; i++) {
+      bgObjectsFar.push({
+        type: "mountain",
+        x: i * 220 + Math.random() * 50,
+        h: 80 + Math.random() * 120,
+        w: 180 + Math.random() * 180,
+        color: Math.random() > 0.5 ? "#2A4A2A" : "#1E3E1E",
+      });
+    }
+    for (let i = 0; i < 5; i++) {
+      const types = BG_TYPES_MID;
+      bgObjectsMid.push({
+        type: types[Math.floor(Math.random() * types.length)],
+        x: i * 180 + Math.random() * 60,
+        scale: 0.4 + Math.random() * 0.5,
+      });
+    }
+  }
 
   function drawBackground() {
     const bio = currentBiome;
@@ -486,7 +551,6 @@
     ctx.globalAlpha = bio.sunAlpha;
     ctx.beginPath();
     if (bio.name === "night") {
-      // Moon (crescent effect)
       ctx.arc(650, 60, 35, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
@@ -494,16 +558,13 @@
       ctx.beginPath();
       ctx.arc(665, 50, 30, 0, Math.PI * 2);
       ctx.fill();
-      // Stars
       ctx.fillStyle = "#FFFFFF";
       const starSeed = frameCount * 0.001;
       for (let i = 0; i < 40; i++) {
         const sx = (i * 137.5 + Math.sin(i * 3.7) * 100) % W;
         const sy = (i * 89.3 + Math.cos(i * 2.3) * 50) % (GROUND_Y - 80) + 10;
-        const twinkle = 0.3 + 0.7 * Math.abs(Math.sin(starSeed + i * 1.5));
-        ctx.globalAlpha = twinkle;
-        const ss = (i % 3 === 0) ? 3 : 2;
-        drawPixelRect(sx, sy, ss, ss, "#FFFFFF");
+        ctx.globalAlpha = 0.3 + 0.7 * Math.abs(Math.sin(starSeed + i * 1.5));
+        drawPixelRect(sx, sy, (i % 3 === 0) ? 3 : 2, (i % 3 === 0) ? 3 : 2, "#FFFFFF");
       }
       ctx.globalAlpha = 1;
     } else {
@@ -526,10 +587,8 @@
     }
     ctx.globalAlpha = 1;
 
-    // Far layer: Mountains
-    const farOff = layers[0].offset;
-    for (const m of bgElements.mountains) {
-      const mx = ((m.x - farOff) % (W + 300)) - 150;
+    // --- Far layer: Dynamic mountains ---
+    for (const m of bgObjectsFar) {
       let mColor = m.color;
       let snowCap = COLOR.shiro;
       if (bio.name === "snow") { mColor = "#6A7A8A"; snowCap = "#FFFFFF"; }
@@ -537,39 +596,43 @@
       else if (bio.name === "war") { mColor = "#3A1A1A"; snowCap = "#5A3030"; }
       else if (bio.name === "golden") { mColor = "#4A3A10"; snowCap = COLOR.kin; }
       else if (bio.name === "sakura") { mColor = "#3A2A3A"; snowCap = COLOR.sakura; }
-      drawMountain(mx, GROUND_Y, m.h, m.w, mColor, snowCap);
+      drawMountain(m.x, GROUND_Y, m.h, m.w, mColor, snowCap);
     }
 
-    // Snow: additional snowy peaks in distance
+    // Snow biome: extra snowy peaks behind
     if (bio.name === "snow") {
-      for (let i = 0; i < 3; i++) {
-        const sx = ((i * 350 + 100 - farOff * 0.5) % (W + 400)) - 100;
-        drawMountain(sx, GROUND_Y, 180 + i * 20, 320, "#8090A0", "#FFFFFF");
+      for (const m of bgObjectsFar) {
+        if (m.h > 140) {
+          drawMountain(m.x - 40, GROUND_Y, m.h + 60, m.w + 80, "#8090A0", "#FFFFFF");
+        }
       }
     }
 
-    // Mid layer: Castles, Torii, Trees
-    const midOff = layers[1].offset;
-
-    for (const t of bgElements.toriis) {
-      const tx = ((t.x - midOff) % (W + 200)) - 100;
-      drawTorii(tx, GROUND_Y - 5, t.scale);
-    }
-
-    for (const c of bgElements.castles) {
-      const cx = ((c.x - midOff) % (W + 400)) - 100;
-      drawCastle(cx, GROUND_Y - 5, c.scale);
-    }
-
-    for (const t of bgElements.trees) {
-      const tx = ((t.x - midOff) % (W + 200)) - 50;
-      drawSakuraTree(tx, GROUND_Y, t.scale);
+    // --- Mid layer: Dynamic castles, torii, trees ---
+    for (const obj of bgObjectsMid) {
+      switch (obj.type) {
+        case "castle":
+          drawCastle(obj.x, GROUND_Y - 5, obj.scale);
+          break;
+        case "torii":
+          drawTorii(obj.x, GROUND_Y - 5, obj.scale);
+          break;
+        case "sakuraTree":
+          drawSakuraTree(obj.x, GROUND_Y, obj.scale);
+          break;
+        case "pine":
+          drawPine(obj.x, GROUND_Y, obj.scale);
+          break;
+        case "bamboo":
+          drawBamboo(obj.x, GROUND_Y, obj.scale);
+          break;
+      }
     }
 
     // War biome: distant fire glow
     if (bio.name === "war") {
       for (let i = 0; i < 4; i++) {
-        const fx = ((i * 230 + 50 - midOff * 0.4) % (W + 200)) - 50;
+        const fx = ((i * 230 + 50 - layers[1].offset * 0.4) % (W + 200)) - 50;
         ctx.globalAlpha = 0.15 + Math.sin(frameCount * 0.05 + i) * 0.08;
         drawPixelRect(fx, GROUND_Y - 80, 30, 80, "#FF4020");
         drawPixelRect(fx + 5, GROUND_Y - 100, 20, 30, "#FF8040");
@@ -583,7 +646,7 @@
       ctx.fillStyle = COLOR.kin;
       const kanjis = ["武","勇","誉","義","忠","仁","礼"];
       for (let i = 0; i < 5; i++) {
-        const kx = ((i * 190 + 30 - midOff * 0.2) % (W + 100)) - 50;
+        const kx = ((i * 190 + 30 - layers[1].offset * 0.2) % (W + 100)) - 50;
         const ky = 60 + Math.sin(frameCount * 0.02 + i * 2) * 20;
         ctx.globalAlpha = 0.15 + Math.sin(frameCount * 0.03 + i) * 0.05;
         ctx.fillText(kanjis[i % kanjis.length], kx, ky);
@@ -597,7 +660,7 @@
     const bio = currentBiome;
 
     // Semi-transparent band behind the runner lane for visibility
-    drawPixelRect(0, GROUND_Y - 95, W, 100, "rgba(0,0,0,0.3)");
+    drawPixelRect(0, GROUND_Y - 95, W, 100, "rgba(0,0,0,0.55)");
 
     // Main ground - biome colored
     drawPixelRect(0, GROUND_Y, W, H - GROUND_Y, bio.groundColor);
@@ -796,6 +859,9 @@
 
     layers.forEach((l) => (l.offset = 0));
     initClouds();
+    initBgObjects();
+    bgSpawnTimerFar = 0;
+    bgSpawnTimerMid = 0;
   }
 
   // ============================================================
@@ -810,7 +876,7 @@
 
     // Increase difficulty over time
     if (difficultyTimer % 300 === 0) {
-      gameSpeed = Math.min(gameSpeed + 0.3, 12);
+      gameSpeed = Math.min(gameSpeed + 0.5, 14);
       obstacleInterval = Math.max(obstacleInterval - 4, 35);
     }
 
@@ -838,6 +904,34 @@
         c.x = W + Math.random() * 100;
         c.y = 30 + Math.random() * 80;
       }
+    }
+
+    // Update background objects - far layer (mountains)
+    const farSpeed = gameSpeed * layers[0].speed;
+    for (let i = bgObjectsFar.length - 1; i >= 0; i--) {
+      bgObjectsFar[i].x -= farSpeed;
+      if (bgObjectsFar[i].x + bgObjectsFar[i].w < -50) {
+        bgObjectsFar.splice(i, 1);
+      }
+    }
+    bgSpawnTimerFar++;
+    if (bgSpawnTimerFar >= 80 + Math.random() * 60) {
+      bgSpawnTimerFar = 0;
+      spawnBgFar();
+    }
+
+    // Update background objects - mid layer (castles, trees, torii, etc.)
+    const midSpeed = gameSpeed * layers[1].speed;
+    for (let i = bgObjectsMid.length - 1; i >= 0; i--) {
+      bgObjectsMid[i].x -= midSpeed;
+      if (bgObjectsMid[i].x < -120) {
+        bgObjectsMid.splice(i, 1);
+      }
+    }
+    bgSpawnTimerMid++;
+    if (bgSpawnTimerMid >= 50 + Math.random() * 40) {
+      bgSpawnTimerMid = 0;
+      spawnBgMid();
     }
 
     // Player gravity & animation
@@ -1039,5 +1133,6 @@
   player.groundY = GROUND_Y - player.h;
   player.y = player.groundY;
   initClouds();
+  initBgObjects();
   gameLoop();
 })();
