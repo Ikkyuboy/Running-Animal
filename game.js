@@ -560,7 +560,7 @@
     const p = player;
     if (spritesLoaded >= totalSprites && spriteFrames[p.frame]) {
       // Draw the processed (white-removed) sprite canvas (shifted down to align feet with ground)
-      ctx.drawImage(spriteFrames[p.frame], p.x - 10, p.y + 10, p.w + 20, p.h + 10);
+      ctx.drawImage(spriteFrames[p.frame], p.x - 10, p.y + 55, p.w + 20, p.h + 10);
     } else {
       // Fallback pixel art leopard
       drawPixelRect(p.x + 10, p.y + 15, 60, 32, COLOR.kin);
