@@ -458,6 +458,9 @@
   function drawGround() {
     const nearOff = layers[2].offset;
 
+    // Black band behind the runner lane for visibility
+    drawPixelRect(0, GROUND_Y - player.h - 15, W, player.h + 20, "rgba(0,0,0,0.55)");
+
     // Main ground
     drawPixelRect(0, GROUND_Y, W, H - GROUND_Y, "#3A2A18");
 
@@ -556,8 +559,8 @@
   function drawPlayer() {
     const p = player;
     if (spritesLoaded >= totalSprites && spriteFrames[p.frame]) {
-      // Draw the processed (white-removed) sprite canvas
-      ctx.drawImage(spriteFrames[p.frame], p.x - 10, p.y - 5, p.w + 20, p.h + 10);
+      // Draw the processed (white-removed) sprite canvas (shifted down to align feet with ground)
+      ctx.drawImage(spriteFrames[p.frame], p.x - 10, p.y + 10, p.w + 20, p.h + 10);
     } else {
       // Fallback pixel art leopard
       drawPixelRect(p.x + 10, p.y + 15, 60, 32, COLOR.kin);
